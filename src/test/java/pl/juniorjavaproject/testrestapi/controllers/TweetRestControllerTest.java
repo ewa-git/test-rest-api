@@ -42,13 +42,14 @@ class TweetRestControllerTest {
     @MockBean
     TweetManagerService tweetManagerService;
 
-
+    private Long id;
     private TweetDTO tweetDTO1;
     private TweetDTO tweetDTO2;
     private List<TweetDTO> tweetDTOList;
 
     @BeforeEach
     public void prepareTest() {
+        id = 1L;
         tweetDTO1 = new TweetDTO();
         tweetDTO1.setId(1L);
         tweetDTO1.setTweetText("test1");
@@ -112,7 +113,7 @@ class TweetRestControllerTest {
         Mockito.when(tweetManagerService.read(ArgumentMatchers.anyLong())).thenReturn(ResponseEntity.ok(tweetDTO1));
 
         mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/tweets/1"))
+                .get("/api/tweets/" + id))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.content().json(tweet));
@@ -124,20 +125,40 @@ class TweetRestControllerTest {
         Mockito.when(tweetManagerService.read(ArgumentMatchers.anyLong())).thenReturn(ResponseEntity.notFound().build());
 
         mockMvc.perform(MockMvcRequestBuilders
-                .get("/api/tweets/9"))
+                .get("/api/tweets/" + id))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
 
     @DisplayName(" - should return updated TweetDTO")
     @Test
-    public void test5(){
-//        Mockito.when(tweetManagerService.update)
+    public void test5() throws Exception {
+        String tweet = objectMapper.writeValueAsString(tweetDTO1);
+/*        Mockito.doAnswer(invocation -> {
+            invocation.getArgument(0, TweetDTO.class).setTweetText("updated");
+            return invocation.getArgument(0);
+        }).when(tweetService).update(ArgumentMatchers.anyLong(), ArgumentMatchers.any());*/
+
+
+   Mockito.when(tweetService.update(1L, tweetDTO1)).thenReturn(tweetDTO1);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .put("/api/tweets/" + id)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(tweet))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(tweet));
+
     }
 
-    @DisplayName(" when given ID is not in database - should throw ElementNotFoundException")
+    @DisplayName(" should return no content")
     @Test
-    public void test6(){
+    public void test6() throws Exception {
+        Mockito.doNothing().when(tweetService).delete(ArgumentMatchers.anyLong());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/tweets/" + id))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
 
     }
 

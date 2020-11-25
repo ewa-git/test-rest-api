@@ -62,6 +62,7 @@ public class TweetService {
         return tweetDTO;
     }
 
+    
     public TweetDTO update(Long id, TweetDTO tweetDTO) throws ElementNotFoundException {
         Optional<Tweet> tweetOptional = tweetRepository.findById(id);
         tweetOptional.orElseThrow(() -> new ElementNotFoundException("Nie ma elementu o podanym ID"));
@@ -77,3 +78,4 @@ public class TweetService {
         tweetRepository.delete(tweet);
     }
 }
+
