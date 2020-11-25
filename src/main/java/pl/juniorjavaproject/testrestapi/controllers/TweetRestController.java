@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
 import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
+import pl.juniorjavaproject.testrestapi.exceptions.UserIdNotPresentException;
 import pl.juniorjavaproject.testrestapi.services.TweetManagerService;
 import pl.juniorjavaproject.testrestapi.services.TweetService;
 
@@ -42,11 +43,11 @@ public class TweetRestController {
     }
 
     @PostMapping
-    public ResponseEntity<TweetDTO> create(@Valid @RequestBody TweetDTO tweetDTO, BindingResult result) {
+    public ResponseEntity<TweetDTO> create(@Valid @RequestBody TweetDTO tweetDTO, BindingResult result) throws UserIdNotPresentException {
         if(result.hasErrors()){
 
         }
-        return ResponseEntity.created(URI.create("/api/tweets/" + tweetService.read(tweetDTO))).build();
+        return ResponseEntity.created(URI.create("/api/tweets/" + tweetService.create(tweetDTO))).build();
     }
 
     @GetMapping("/{id}")

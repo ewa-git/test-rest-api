@@ -4,10 +4,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
 import pl.juniorjavaproject.testrestapi.dto.UserDTO;
-import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
-import pl.juniorjavaproject.testrestapi.mapper.TweetMapper;
 import pl.juniorjavaproject.testrestapi.model.Tweet;
+import pl.juniorjavaproject.testrestapi.model.User;
 import pl.juniorjavaproject.testrestapi.repositories.TweetRepository;
+import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
+import pl.juniorjavaproject.testrestapi.exceptions.UserIdNotPresentException;
+import pl.juniorjavaproject.testrestapi.mapper.TweetMapper;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -45,11 +47,14 @@ public class TweetService {
         return tweetDTOSList;
     }
 
-    public Long read(TweetDTO tweetDTO) {
+    public Long create(TweetDTO tweetDTO) throws UserIdNotPresentException {
+        if(tweetDTO.getUserDTO() == null || tweetDTO.getUserDTO().getId() == null)
+            throw new UserIdNotPresentException("Brak podanego id użytkownika.");
+        Long id = tweetDTO.getUserDTO().getId();
         Tweet tweet = modelMapper.map(tweetDTO, Tweet.class);
-        tweet.setUser(userService.findUserById(tweetDTO.getUserDTO().getId()));
-        tweetRepository.save(tweet);
-        return tweet.getId();
+        Optional<User> optionalUser = userService.findUserById(id);
+        Tweet savedTweet = tweetRepository.save(tweet);
+        return savedTweet.getId();
     }
 
     public TweetDTO read(long id) {
