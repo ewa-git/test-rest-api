@@ -38,9 +38,7 @@ public class TweetService {
         List<TweetDTO> tweetDTOSList = new ArrayList<>();
         if (!tweetList.isEmpty()) {
             for (Tweet tweet : tweetList) {
-                UserDTO userDTO = modelMapper.map(tweet.getUser(), UserDTO.class);
-                TweetDTO tweetDTO = modelMapper.map(tweet, TweetDTO.class);
-                tweetDTO.setUserDTO(userDTO);
+                TweetDTO tweetDTO = tweetMapper.from(tweet);
                 tweetDTOSList.add(tweetDTO);
             }
         }

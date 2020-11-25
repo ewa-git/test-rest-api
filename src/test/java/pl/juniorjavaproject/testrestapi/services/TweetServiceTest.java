@@ -25,8 +25,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class TweetServiceTest {
 
@@ -34,6 +33,8 @@ class TweetServiceTest {
     private TweetRepository tweetRepository;
     @Mock
     private UserService userService;
+    @Mock
+    private TweetMapper mockTweetMapper;
 
     private long id1;
     private Tweet tweet1;
@@ -46,9 +47,15 @@ class TweetServiceTest {
     private User user1;
     private UserDTO userDTO1;
 
-    private ModelMapper modelMapper = new ModelMapper();
-    @Autowired
+    private TweetService tweetServiceMockTweetMapper;
+
+    private ModelMapper modelMapper;
     private TweetMapper tweetMapper;
+
+    {
+        modelMapper = new ModelMapper();
+        tweetMapper = new TweetMapper();
+    }
 
     @BeforeEach
     void init() {
@@ -89,27 +96,43 @@ class TweetServiceTest {
         tweetDTOList = List.of(tweetDTO1, tweetDTO2);
 
         tweetService = new TweetService(tweetRepository, userService, modelMapper, tweetMapper);
+        tweetServiceMockTweetMapper = new TweetService(tweetRepository, userService, modelMapper, mockTweetMapper);
     }
 
-    @Test
-    void shouldReturnTweetDtoList() {
-        //given
-        when(tweetRepository.findAll()).thenReturn(tweetList);
+    @Nested
+    class ListMethodTest {
+        @Test
+        void shouldReturnTweetDtoList() {
+            //given
+            when(tweetRepository.findAll()).thenReturn(tweetList);
 
-        //when
-        List<TweetDTO> returnedTweetDTOList = tweetService.list();
+            //when
+            List<TweetDTO> returnedTweetDTOList = tweetService.list();
 
-        //then
-        SoftAssertions softAssertions = new SoftAssertions();
-        for (int i = 0; i < returnedTweetDTOList.size(); i++) {
-            TweetDTO currentTweetDTO = returnedTweetDTOList.get(i);
-            TweetDTO compareTweetDTO = tweetDTOList.get(i);
-            softAssertions.assertThat(currentTweetDTO.getUserDTO()).isEqualTo(compareTweetDTO.getUserDTO());
-            softAssertions.assertThat(currentTweetDTO.getId()).isEqualTo(compareTweetDTO.getId());
-            softAssertions.assertThat(currentTweetDTO.getTweetText()).isEqualTo(compareTweetDTO.getTweetText());
-            softAssertions.assertThat(currentTweetDTO.getTweetTitle()).isEqualTo(compareTweetDTO.getTweetTitle());
+            //then
+            SoftAssertions softAssertions = new SoftAssertions();
+            for (int i = 0; i < returnedTweetDTOList.size(); i++) {
+                TweetDTO currentTweetDTO = returnedTweetDTOList.get(i);
+                TweetDTO compareTweetDTO = tweetDTOList.get(i);
+                softAssertions.assertThat(currentTweetDTO.getUserDTO()).isEqualTo(compareTweetDTO.getUserDTO());
+                softAssertions.assertThat(currentTweetDTO.getId()).isEqualTo(compareTweetDTO.getId());
+                softAssertions.assertThat(currentTweetDTO.getTweetText()).isEqualTo(compareTweetDTO.getTweetText());
+                softAssertions.assertThat(currentTweetDTO.getTweetTitle()).isEqualTo(compareTweetDTO.getTweetTitle());
+            }
+            softAssertions.assertAll();
         }
-        softAssertions.assertAll();
+
+        @Test
+        void shouldUseTweetMapper() {
+            //given
+            when(tweetRepository.findAll()).thenReturn(tweetList);
+
+            //when
+            tweetServiceMockTweetMapper.list();
+
+            //then
+            verify(mockTweetMapper, Mockito.times(tweetList.size())).from(ArgumentMatchers.any(Tweet.class));
+        }
     }
 
     @Nested
@@ -194,7 +217,6 @@ class TweetServiceTest {
 
     @Nested
     class ReadMethodTests {
-
         @Test
         void shouldThrowElementNotFoundException() {
             //given
@@ -208,11 +230,9 @@ class TweetServiceTest {
         void shouldUseTweetMapper() throws ElementNotFoundException {
             //given
             when(tweetRepository.findById(ArgumentMatchers.anyLong())).thenReturn(Optional.of(tweet1));
-            TweetMapper mockTweetMapper = Mockito.mock(TweetMapper.class);
-            tweetService = new TweetService(tweetRepository, userService, modelMapper, mockTweetMapper);
 
             //when
-            tweetService.read(ArgumentMatchers.anyLong());
+            tweetServiceMockTweetMapper.read(ArgumentMatchers.anyLong());
 
             //then
             Mockito.verify(mockTweetMapper, Mockito.times(1))
@@ -235,10 +255,55 @@ class TweetServiceTest {
                     () -> assertThat(returnedTweetDTO.getUserDTO()).isEqualTo(tweetDTO1.getUserDTO())
             );
         }
-
     }
 
+    @Nested
+    class UpdateMethodTests {
+        @Test
+        void shouldThrowElementNotFoundExceptionWhenIdNotFound() {
+            //given
+            when(tweetRepository.findById(ArgumentMatchers.anyLong())).thenReturn(Optional.empty());
 
+            //
+            assertThrows(ElementNotFoundException.class, () -> tweetService.update(id1, tweetDTO1));
+        }
 
+        @Test
+        void shouldUseTweetMapper() throws ElementNotFoundException {
+            //given
+            when(tweetRepository.findById(id1)).thenReturn(Optional.of(tweet1));
 
+            //when
+            tweetServiceMockTweetMapper.update(id1, tweetDTO1);
+
+            //then
+            verify(mockTweetMapper, times(1)).from(tweetDTO1);
+        }
+
+        @Test
+        void givenTweetShouldHaveSameFieldsAsSavedTweet() throws ElementNotFoundException {
+            //given
+            when(tweetRepository.findById(id1)).thenReturn(Optional.of(tweet1));
+            when(tweetRepository.save(ArgumentMatchers.any(Tweet.class))).thenReturn(tweet2);
+            User user2 = modelMapper.map(tweetDTO2.getUserDTO(), User.class);
+
+            //when
+            tweetService.update(id1, tweetDTO2);
+            ArgumentCaptor<Tweet> argumentCaptor = ArgumentCaptor.forClass(Tweet.class);
+
+            //then
+            verify(tweetRepository).save(argumentCaptor.capture());
+            Tweet capturedTweet = argumentCaptor.capture();
+
+            to nie działa
+
+            assertAll(
+                    () -> assertThat(capturedTweet.getId()).isEqualTo(id1),
+                    () -> assertThat(capturedTweet.getTweetText()).isEqualTo(tweetDTO2.getTweetText()),
+                    () -> assertThat(capturedTweet.getTweetTitle()).isEqualTo(tweetDTO2.getTweetTitle()),
+                    () -> assertThat(capturedTweet.getUser()).isEqualTo(user2)
+            );
+
+        }
+    }
 }
