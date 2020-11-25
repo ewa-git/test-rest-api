@@ -43,7 +43,8 @@ public class TweetRestController {
     }
 
     @PostMapping
-    public ResponseEntity<TweetDTO> create(@Valid @RequestBody TweetDTO tweetDTO, BindingResult result) throws UserIdNotPresentException {
+    public ResponseEntity<TweetDTO> create(@Valid @RequestBody TweetDTO tweetDTO, BindingResult result)
+            throws UserIdNotPresentException, ElementNotFoundException {
         if(result.hasErrors()){
 
         }
