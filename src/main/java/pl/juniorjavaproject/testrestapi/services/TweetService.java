@@ -6,6 +6,7 @@ import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
 import pl.juniorjavaproject.testrestapi.dto.UserDTO;
 import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
 import pl.juniorjavaproject.testrestapi.mapper.TweetMapper;
+import pl.juniorjavaproject.testrestapi.mapper.UserMapper;
 import pl.juniorjavaproject.testrestapi.model.Tweet;
 import pl.juniorjavaproject.testrestapi.repositories.TweetRepository;
 
@@ -20,15 +21,15 @@ public class TweetService {
 
     private final TweetRepository tweetRepository;
     private final UserService userService;
-    private final ModelMapper modelMapper;
     private final TweetMapper tweetMapper;
+    private final UserMapper userMapper;
 
-    public TweetService(TweetRepository tweetRepository, UserService userService, ModelMapper modelMapper,
-                        TweetMapper tweetMapper) {
+    public TweetService(TweetRepository tweetRepository, UserService userService,
+                        TweetMapper tweetMapper, UserMapper userMapper) {
         this.tweetRepository = tweetRepository;
         this.userService = userService;
-        this.modelMapper = modelMapper;
         this.tweetMapper = tweetMapper;
+        this.userMapper = userMapper;
     }
 
     public List<TweetDTO> list() {
@@ -36,8 +37,8 @@ public class TweetService {
         List<TweetDTO> tweetDTOSList = new ArrayList<>();
         if (!tweetList.isEmpty()) {
             for (Tweet tweet : tweetList) {
-                UserDTO userDTO = modelMapper.map(tweet.getUser(), UserDTO.class);
-                TweetDTO tweetDTO = modelMapper.map(tweet, TweetDTO.class);
+                UserDTO userDTO = userMapper.from(tweet.getUser());
+                TweetDTO tweetDTO = tweetMapper.from(tweet);
                 tweetDTO.setUserDTO(userDTO);
                 tweetDTOSList.add(tweetDTO);
             }
@@ -45,23 +46,20 @@ public class TweetService {
         return tweetDTOSList;
     }
 
-    public Long read(TweetDTO tweetDTO) {
-        Tweet tweet = modelMapper.map(tweetDTO, Tweet.class);
+    public Long create(TweetDTO tweetDTO) {
+        Tweet tweet = tweetMapper.from(tweetDTO);
         tweet.setUser(userService.findUserById(tweetDTO.getUserDTO().getId()));
         tweetRepository.save(tweet);
         return tweet.getId();
     }
 
-    public TweetDTO read(long id) {
-        Tweet tweet = tweetRepository.findTweetById(id);
-        if (tweet != null) {
-            TweetDTO tweetDTO = modelMapper.map(tweet, TweetDTO.class);
-            UserDTO userDTO = modelMapper.map(tweet.getUser(), UserDTO.class);
-            tweetDTO.setUserDTO(userDTO);
-            return tweetDTO;
-        } else {
-            return null;
-        }
+    public TweetDTO read(long id) throws ElementNotFoundException {
+        Optional<Tweet> tweetOptional = tweetRepository.findById(id);
+        tweetOptional.orElseThrow(() -> new ElementNotFoundException("Nie ma elementu o podanym ID"));
+        TweetDTO tweetDTO = tweetMapper.from(tweetOptional.get());
+        UserDTO userDTO = userMapper.from(tweetOptional.get().getUser());
+        tweetDTO.setUserDTO(userDTO);
+        return tweetDTO;
     }
 
     public TweetDTO update(Long id, TweetDTO tweetDTO) throws ElementNotFoundException {

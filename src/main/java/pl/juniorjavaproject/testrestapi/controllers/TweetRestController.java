@@ -32,13 +32,8 @@ public class TweetRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TweetDTO>> list() {
-        List<TweetDTO> tweetDTOList = tweetService.list();
-        if (!tweetDTOList.isEmpty()) {
-            return ResponseEntity.ok(tweetDTOList);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<List<TweetDTO>> list() throws ElementNotFoundException {
+       return tweetManagerService.list();
     }
 
     @PostMapping
@@ -46,16 +41,12 @@ public class TweetRestController {
         if(result.hasErrors()){
 
         }
-        return ResponseEntity.created(URI.create("/api/tweets/" + tweetService.read(tweetDTO))).build();
+        return ResponseEntity.created(URI.create("/api/tweets/" + tweetService.create(tweetDTO))).build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TweetDTO> read(@PathVariable Long id, BindingResult result) {
-       if(result.hasErrors()){
-
-       }
-
-        return tweetManagerService.read(id);
+    public ResponseEntity<TweetDTO> read(@PathVariable Long id) throws ElementNotFoundException {
+            return tweetManagerService.read(id);
     }
 
     @PutMapping("/{id}")

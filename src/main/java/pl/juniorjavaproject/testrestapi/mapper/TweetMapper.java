@@ -5,13 +5,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
+import pl.juniorjavaproject.testrestapi.exceptions.ElementCanNotBeNull;
+import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
 import pl.juniorjavaproject.testrestapi.model.Tweet;
 
 @Component
 public class TweetMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(TweetMapper.class);
 
-    public TweetDTO from(Tweet tweet) {
+    public TweetDTO from(Tweet tweet) throws ElementCanNotBeNull {
+        if(tweet == null){
+            throw new ElementCanNotBeNull("Element do zmapowania nie może być nullem");
+        }
         LOGGER.info("from({})", tweet);
         ModelMapper modelMapper = new ModelMapper();
         TweetDTO tweetDTO = modelMapper.map(tweet, TweetDTO.class);
