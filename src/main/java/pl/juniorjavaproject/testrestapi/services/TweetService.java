@@ -48,26 +48,21 @@ public class TweetService {
     }
 
     public Long create(TweetDTO tweetDTO) throws UserIdNotPresentException, ElementNotFoundException {
-        if(tweetDTO.getUserDTO() == null || tweetDTO.getUserDTO().getId() == null)
+        UserDTO userDTO = tweetDTO.getUserDTO();
+        if (userDTO == null || userDTO.getId() == null)
             throw new UserIdNotPresentException("Brak podanego id użytkownika.");
-        Long id = tweetDTO.getUserDTO().getId();
-        Tweet tweet = modelMapper.map(tweetDTO, Tweet.class);
-        Optional<User> optionalUser = userService.findUserById(id);
+        Optional<User> optionalUser = userService.findUserById(userDTO.getId());
         optionalUser.orElseThrow(() -> new ElementNotFoundException("Brak użytkownika o podanym ID"));
+        Tweet tweet = modelMapper.map(tweetDTO, Tweet.class);
         Tweet savedTweet = tweetRepository.save(tweet);
         return savedTweet.getId();
     }
 
-    public TweetDTO read(long id) {
-        Tweet tweet = tweetRepository.findTweetById(id);
-        if (tweet != null) {
-            TweetDTO tweetDTO = modelMapper.map(tweet, TweetDTO.class);
-            UserDTO userDTO = modelMapper.map(tweet.getUser(), UserDTO.class);
-            tweetDTO.setUserDTO(userDTO);
-            return tweetDTO;
-        } else {
-            return null;
-        }
+    public TweetDTO read(long id) throws ElementNotFoundException {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        Tweet tweet = optionalTweet
+                .orElseThrow(() -> new ElementNotFoundException("Brak tweetu o podanym ID"));
+        return tweetMapper.from(tweet);
     }
 
     public TweetDTO update(Long id, TweetDTO tweetDTO) throws ElementNotFoundException {

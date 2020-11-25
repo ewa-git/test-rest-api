@@ -2,15 +2,12 @@ package pl.juniorjavaproject.testrestapi.services;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Nested;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
@@ -38,6 +35,7 @@ class TweetServiceTest {
     @Mock
     private UserService userService;
 
+    private long id1;
     private Tweet tweet1;
     private Tweet tweet2;
     private TweetDTO tweetDTO1;
@@ -56,8 +54,9 @@ class TweetServiceTest {
     void init() {
         MockitoAnnotations.openMocks(this);
 
+        id1 = 1L;
         user1 = new User();
-        user1.setId(1L);
+        user1.setId(id1);
         user1.setFirstName("Damian");
         user1.setLastName("Rowiński");
 
@@ -67,7 +66,7 @@ class TweetServiceTest {
         user2.setLastName("Nowak");
 
         tweet1 = new Tweet();
-        tweet1.setId(1L);
+        tweet1.setId(id1);
         tweet1.setUser(user1);
         tweet1.setTweetText("text1 tweet1");
         tweet1.setTweetTitle("TITLE_1 tweet1");
@@ -113,46 +112,59 @@ class TweetServiceTest {
         softAssertions.assertAll();
     }
 
-    @Test
-    void givenTweetDtoShouldReturnSavedTweetId() throws UserIdNotPresentException, ElementNotFoundException {
-        //given
-        TweetDTO tweetDtoNoId = new TweetDTO();
-        tweetDtoNoId.setUserDTO(userDTO1);
+    @Nested
+    class CreateMethodTests {
+        @Test
+        void shouldThrowElementNotFoundExceptionWhenUserNotFound() {
+            //given
+            when(userService.findUserById(ArgumentMatchers.anyLong())).thenReturn(Optional.empty());
+            when(tweetRepository.save(ArgumentMatchers.any(Tweet.class))).thenReturn(tweet1);
 
-        when(userService.findUserById(ArgumentMatchers.anyLong())).thenReturn(Optional.of(user1));
-        when(tweetRepository.save(ArgumentMatchers.any(Tweet.class))).thenReturn(tweet1);
+            //when && then
+            assertThrows(ElementNotFoundException.class, () -> tweetService.create(tweetDTO1));
+        }
 
-        //when
-        Long tweetReturnedId = tweetService.create(tweetDtoNoId);
+        @Test
+        void givenTweetDtoShouldReturnSavedTweetId() throws UserIdNotPresentException, ElementNotFoundException {
+            //given
+            TweetDTO tweetDtoNoId = new TweetDTO();
+            tweetDtoNoId.setUserDTO(userDTO1);
 
-        //then
-        assertThat(tweetReturnedId).isEqualTo(tweet1.getId());
-    }
+            when(userService.findUserById(ArgumentMatchers.anyLong())).thenReturn(Optional.of(user1));
+            when(tweetRepository.save(ArgumentMatchers.any(Tweet.class))).thenReturn(tweet1);
 
-    @Test
-    void givenTweetDtoShouldSaveTweetWithTheSameFields() throws UserIdNotPresentException, ElementNotFoundException {
-        //given
-        when(userService.findUserById(ArgumentMatchers.anyLong())).thenReturn(Optional.of(user1));
-        when(tweetRepository.save(ArgumentMatchers.any(Tweet.class))).thenReturn(tweet1);
+            //when
+            Long tweetReturnedId = tweetService.create(tweetDtoNoId);
 
-        //when
-        tweetService.create(tweetDTO1);
-        ArgumentCaptor<Tweet> argumentCaptor = ArgumentCaptor.forClass(Tweet.class);
+            //then
+            assertThat(tweetReturnedId).isEqualTo(tweet1.getId());
+        }
 
-        //then
-        verify(tweetRepository).save(argumentCaptor.capture());
-        Tweet savedTweet = argumentCaptor.getValue();
+        @Test
+        void givenTweetDtoShouldSaveTweetWithTheSameFields() throws UserIdNotPresentException, ElementNotFoundException {
+            //given
+            when(userService.findUserById(ArgumentMatchers.anyLong())).thenReturn(Optional.of(user1));
+            when(tweetRepository.save(ArgumentMatchers.any(Tweet.class))).thenReturn(tweet1);
 
-        assertAll(
-                () -> assertThat(savedTweet.getTweetTitle()).isEqualTo(tweet1.getTweetTitle()),
-                () -> assertThat(savedTweet.getTweetText()).isEqualTo(tweet1.getTweetText()),
-                () -> assertThat(savedTweet.getUser()).isEqualTo(tweet1.getUser())
-        );
+            //when
+            tweetService.create(tweetDTO1);
+            ArgumentCaptor<Tweet> argumentCaptor = ArgumentCaptor.forClass(Tweet.class);
+
+            //then
+            verify(tweetRepository).save(argumentCaptor.capture());
+            Tweet savedTweet = argumentCaptor.getValue();
+
+            assertAll(
+                    () -> assertThat(savedTweet.getTweetTitle()).isEqualTo(tweet1.getTweetTitle()),
+                    () -> assertThat(savedTweet.getTweetText()).isEqualTo(tweet1.getTweetText()),
+                    () -> assertThat(savedTweet.getUser()).isEqualTo(tweet1.getUser())
+            );
+        }
     }
 
     @ParameterizedTest
     @MethodSource("dataForUserNotPresentExceptions")
-    void shouldThrowExceptionWhenUserDataNotPresent(TweetDTO tweetDTO) {
+    void createShouldThrowExceptionWhenUserDataNotPresent(TweetDTO tweetDTO) {
         assertThrows(UserIdNotPresentException.class, () -> tweetService.create(tweetDTO));
     }
 
@@ -180,13 +192,53 @@ class TweetServiceTest {
 //        assertThrows(UserIdNotPresentException.class, () -> tweetService.create(tweetDtoNoUserId));
 //    }
 
-    @Test
-    void shouldThrowElementNotFoundExceptionWhenUserNotFound() {
-        //given
-        when(userService.findUserById(ArgumentMatchers.anyLong())).thenReturn(Optional.empty());
-        when(tweetRepository.save(ArgumentMatchers.any(Tweet.class))).thenReturn(tweet1);
+    @Nested
+    class ReadMethodTests {
 
-        //when && then
-        assertThrows(ElementNotFoundException.class, () -> tweetService.create(tweetDTO1));
+        @Test
+        void shouldThrowElementNotFoundException() {
+            //given
+            when(tweetRepository.findById(ArgumentMatchers.anyLong())).thenReturn(Optional.empty());
+
+            //when && then
+            assertThrows(ElementNotFoundException.class, () -> tweetService.read(ArgumentMatchers.anyLong()));
+        }
+
+        @Test
+        void shouldUseTweetMapper() throws ElementNotFoundException {
+            //given
+            when(tweetRepository.findById(ArgumentMatchers.anyLong())).thenReturn(Optional.of(tweet1));
+            TweetMapper mockTweetMapper = Mockito.mock(TweetMapper.class);
+            tweetService = new TweetService(tweetRepository, userService, modelMapper, mockTweetMapper);
+
+            //when
+            tweetService.read(ArgumentMatchers.anyLong());
+
+            //then
+            Mockito.verify(mockTweetMapper, Mockito.times(1))
+                    .from(ArgumentMatchers.any(Tweet.class));
+        }
+
+        @Test
+        void givenIdShouldReturnTweetDTO() throws ElementNotFoundException {
+            //given
+            when(tweetRepository.findById(id1)).thenReturn(Optional.of(tweet1));
+
+            //when
+            TweetDTO returnedTweetDTO = tweetService.read(id1);
+
+            //then
+            assertAll(
+                    () -> assertThat(returnedTweetDTO.getId()).isEqualTo(tweetDTO1.getId()),
+                    () -> assertThat(returnedTweetDTO.getTweetText()).isEqualTo(tweetDTO1.getTweetText()),
+                    () -> assertThat(returnedTweetDTO.getTweetTitle()).isEqualTo(tweetDTO1.getTweetTitle()),
+                    () -> assertThat(returnedTweetDTO.getUserDTO()).isEqualTo(tweetDTO1.getUserDTO())
+            );
+        }
+
     }
+
+
+
+
 }

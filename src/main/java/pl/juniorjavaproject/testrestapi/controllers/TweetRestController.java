@@ -52,7 +52,7 @@ public class TweetRestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TweetDTO> read(@PathVariable Long id, BindingResult result) {
+    public ResponseEntity<TweetDTO> read(@PathVariable Long id, BindingResult result) throws ElementNotFoundException {
        if(result.hasErrors()){
 
        }
