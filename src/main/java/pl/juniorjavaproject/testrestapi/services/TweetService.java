@@ -1,6 +1,5 @@
 package pl.juniorjavaproject.testrestapi.services;
 
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
@@ -13,7 +12,6 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Transactional
 @Service
 public class TweetService {
@@ -22,25 +20,31 @@ public class TweetService {
     private final UserService userService;
     private final ModelMapper modelMapper;
 
+    public TweetService(TweetRepository tweetRepository, UserService userService, ModelMapper modelMapper) {
+        this.tweetRepository = tweetRepository;
+        this.userService = userService;
+        this.modelMapper = modelMapper;
+    }
+
     public List<TweetDTO> getAll() {
         List<Tweet> tweetList = tweetRepository.findAll();
         List<TweetDTO> tweetDTOSList = new ArrayList<>();
         if (!tweetList.isEmpty()) {
             for (Tweet tweet : tweetList) {
-                UserDTO userDTO = modelMapper.map(tweet.getUser(), UserDTO.class);
+//                UserDTO userDTO = modelMapper.map(tweet.getUser(), UserDTO.class);
                 TweetDTO tweetDTO = modelMapper.map(tweet, TweetDTO.class);
-                tweetDTO.setUserDTO(userDTO);
+//                tweetDTO.setUserDTO(userDTO);
                 tweetDTOSList.add(tweetDTO);
             }
         }
         return tweetDTOSList;
     }
 
-    public Long saveTweet(TweetDTO tweetDTO) {
+    public TweetDTO saveTweet(TweetDTO tweetDTO) {
         Tweet tweet = modelMapper.map(tweetDTO, Tweet.class);
-        tweet.setUser(userService.findUserById(tweetDTO.getUserDTO().getId()));
-        tweetRepository.save(tweet);
-        return tweet.getId();
+//        tweet.setUser(userService.findUserById(tweetDTO.getUserDTO().getId()));
+        Tweet savedTweet = tweetRepository.save(tweet);
+        return modelMapper.map(savedTweet, TweetDTO.class);
     }
 
     public TweetDTO findTweetById(long id) {
