@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
 @Transactional
 @Service
 public class TweetService {
@@ -69,7 +70,7 @@ public class TweetService {
         return tweetDTO;
     }
 
-    
+
     public TweetDTO update(Long id, TweetDTO tweetDTO) throws ElementNotFoundException {
         LOGGER.info("received TweetDTO to be updated {} and id {}", tweetDTO, id);
         Optional<Tweet> tweetOptional = tweetRepository.findById(id);
@@ -88,5 +89,12 @@ public class TweetService {
         LOGGER.info("Tweet from DB to be deleted{}", tweet);
         tweetRepository.delete(tweet);
     }
-}
 
+    public TweetDTO saveTweet(TweetDTO tweetDTO) {
+        Tweet tweet = tweetMapper.from(tweetDTO);
+//        tweet.setUser(userService.findUserById(tweetDTO.getUserDTO().getId()));
+        Tweet savedTweet = tweetRepository.save(tweet);
+        return tweetMapper.from(savedTweet);
+    }
+
+}

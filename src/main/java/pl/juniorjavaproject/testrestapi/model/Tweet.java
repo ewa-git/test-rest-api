@@ -1,7 +1,5 @@
 package pl.juniorjavaproject.testrestapi.model;
 
-import lombok.Builder;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,10 +11,23 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 
+
 @Entity
 @Table(name = Tweet.TABLE_NAME)
 public class Tweet {
     public static final String TABLE_NAME = "tweets";
+
+    public Tweet() {
+    }
+
+    public Tweet(Long id, LocalDateTime createdOn, LocalDateTime updatedOn, String tweetTitle, String tweetText, User user) {
+        this.id = id;
+        this.createdOn = createdOn;
+        this.updatedOn = updatedOn;
+        this.tweetTitle = tweetTitle;
+        this.tweetText = tweetText;
+        this.user = user;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -93,5 +104,17 @@ public class Tweet {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "Tweet{" +
+                "id=" + id +
+                ", createdOn=" + createdOn +
+                ", updatedOn=" + updatedOn +
+                ", tweetTitle='" + tweetTitle + '\'' +
+                ", tweetText='" + tweetText + '\'' +
+                ", user=" + user +
+                '}';
     }
 }
