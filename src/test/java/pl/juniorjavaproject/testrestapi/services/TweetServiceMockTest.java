@@ -54,6 +54,7 @@ public class TweetServiceMockTest {
         );
     }
 
+    @Test
     void givenTweetDTO_whenRepositorySave_thenDtoNotNull() {
         // given
         // mocked test fields and...
