@@ -7,6 +7,7 @@ import pl.juniorjavaproject.testrestapi.model.User;
 import pl.juniorjavaproject.testrestapi.repositories.UserRepository;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Transactional
@@ -15,7 +16,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public User findUserById(long id) {
-        return userRepository.findUserById(id);
+    public Optional<User> findUserById(long id) {
+        return userRepository.findById(id);
     }
 }

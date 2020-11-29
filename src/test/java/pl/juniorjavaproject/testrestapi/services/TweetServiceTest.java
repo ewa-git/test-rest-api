@@ -53,7 +53,7 @@ class TweetServiceTest {
         userDTO.setFirstName("Jan");
         userDTO.setLastName("Kowalski");
 
-        tweetDTO.setUserDTO(userDTO);
+        tweetDTO.setUser(userDTO);
 
         tweet = new Tweet();
         tweet.setId(1L);
