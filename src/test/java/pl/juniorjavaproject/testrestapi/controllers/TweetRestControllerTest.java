@@ -235,6 +235,30 @@ class TweetRestControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
+    @DisplayName(" put method - when given given TweetDTO has null user - should return bad request ")
+    @Test
+    public void test9() throws Exception {
+        //given
+
+        TweetDTO tweetDTO = TweetDTO.builder()
+                .id(TWEET_ID)
+                .tweetTitle(TWEET_TITLE)
+                .tweetText(TWEET_TEXT)
+                .build();
+        String tweet = objectMapper.writeValueAsString(tweetDTO);
+
+        Mockito.when(tweetService.update(1L, tweetDTO)).thenReturn(tweetDTO);
+
+        //when
+        //then
+        mockMvc.perform(MockMvcRequestBuilders
+                .put(BASE_URI + TWEET_ID)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(tweet))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
 
     @DisplayName("delete method - should return no content")
     @Test
