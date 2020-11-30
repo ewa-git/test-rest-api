@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
+import pl.juniorjavaproject.testrestapi.dto.UserDTO;
+import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
 import pl.juniorjavaproject.testrestapi.services.TweetManagerService;
 import pl.juniorjavaproject.testrestapi.services.TweetService;
 
@@ -34,6 +36,9 @@ class TweetRestControllerTest {
     private static final String TWEET_TITLE = "test title";
     private static final String TWEET_TEXT = "test tweet text";
     private static final Long TWEET_ID = 1L;
+    private static final Long USER_ID = 1L;
+    private static final String USER_FIRSTNAME = "test user firstname";
+    private static final String USER_LASTNAME = "test user lastname";
     private static final String BASE_URI = "/api/tweets/";
 
 
@@ -61,12 +66,18 @@ class TweetRestControllerTest {
     @Test
     public void test1() throws Exception {
         //given
+        UserDTO userDTO = UserDTO.builder()
+                .id(USER_ID)
+                .firstName(USER_FIRSTNAME)
+                .lastName(USER_LASTNAME)
+                .build();
+
         TweetDTO tweetDTO = TweetDTO.builder()
                 .id(TWEET_ID)
                 .tweetTitle(TWEET_TITLE)
                 .tweetText(TWEET_TEXT)
+                .user(userDTO)
                 .build();
-
         List<TweetDTO> tweetDTOList = List.of(tweetDTO);
 
         String tweetListJSON = objectMapper.writeValueAsString(tweetDTOList);
@@ -85,10 +96,17 @@ class TweetRestControllerTest {
     @Test
     public void test2() throws Exception {
         //given
+        UserDTO userDTO = UserDTO.builder()
+                .id(USER_ID)
+                .firstName(USER_FIRSTNAME)
+                .lastName(USER_LASTNAME)
+                .build();
+
         TweetDTO tweetDTO = TweetDTO.builder()
                 .id(TWEET_ID)
                 .tweetTitle(TWEET_TITLE)
                 .tweetText(TWEET_TEXT)
+                .user(userDTO)
                 .build();
         String tweet = objectMapper.writeValueAsString(tweetDTO);
 
@@ -115,10 +133,17 @@ class TweetRestControllerTest {
     @Test
     public void test3() throws Exception {
         //given
+        UserDTO userDTO = UserDTO.builder()
+                .id(USER_ID)
+                .firstName(USER_FIRSTNAME)
+                .lastName(USER_LASTNAME)
+                .build();
+
         TweetDTO tweetDTO = TweetDTO.builder()
                 .id(TWEET_ID)
                 .tweetTitle(TWEET_TITLE)
                 .tweetText(TWEET_TEXT)
+                .user(userDTO)
                 .build();
         String tweet = objectMapper.writeValueAsString(tweetDTO);
         Mockito.when(tweetManagerService.read(ArgumentMatchers.anyLong())).thenReturn(ResponseEntity.ok(tweetDTO));
@@ -132,7 +157,7 @@ class TweetRestControllerTest {
                 .andExpect(MockMvcResultMatchers.content().json(tweet));
     }
 
-    @DisplayName(" when ID is not in database - should return element not found status")
+    @DisplayName("get method when ID is not in database - should return element not found status")
     @Test
     public void test4() throws Exception {
         //given
@@ -145,15 +170,21 @@ class TweetRestControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
-
     @DisplayName(" put method - should return updated TweetDTO")
     @Test
     public void test5() throws Exception {
         //given
+        UserDTO userDTO = UserDTO.builder()
+                .id(USER_ID)
+                .firstName(USER_FIRSTNAME)
+                .lastName(USER_LASTNAME)
+                .build();
+
         TweetDTO tweetDTO = TweetDTO.builder()
                 .id(TWEET_ID)
                 .tweetTitle(TWEET_TITLE)
                 .tweetText(TWEET_TEXT)
+                .user(userDTO)
                 .build();
         String tweet = objectMapper.writeValueAsString(tweetDTO);
 
@@ -174,10 +205,40 @@ class TweetRestControllerTest {
                 .andExpect(MockMvcResultMatchers.content().json(tweet));
 
     }
+    @DisplayName(" put method - when given id is not in database - should return not found status ")
+    @Test
+    public void test6() throws Exception {
+        //given
+        UserDTO userDTO = UserDTO.builder()
+                .id(USER_ID)
+                .firstName(USER_FIRSTNAME)
+                .lastName(USER_LASTNAME)
+                .build();
+
+        TweetDTO tweetDTO = TweetDTO.builder()
+                .id(TWEET_ID)
+                .tweetTitle(TWEET_TITLE)
+                .tweetText(TWEET_TEXT)
+                .user(userDTO)
+                .build();
+        String tweet = objectMapper.writeValueAsString(tweetDTO);
+
+        Mockito.when(tweetService.update(1L, tweetDTO)).thenThrow(ElementNotFoundException.class);
+
+        //when
+        //then
+        mockMvc.perform(MockMvcRequestBuilders
+                .put(BASE_URI + TWEET_ID)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(tweet))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
 
     @DisplayName("delete method - should return no content")
     @Test
-    public void test6() throws Exception {
+    public void test7() throws Exception {
         //given
         Mockito.doNothing().when(tweetService).delete(ArgumentMatchers.anyLong());
 
@@ -188,5 +249,12 @@ class TweetRestControllerTest {
 
     }
 
+    @DisplayName("delete method - when id is not in database - should return not found status")
+    @Test
+    public void test8() throws Exception {
+        Mockito.doThrow(ElementNotFoundException.class).when(tweetService).delete(ArgumentMatchers.anyLong());
 
+        mockMvc.perform(MockMvcRequestBuilders.delete(BASE_URI + TWEET_ID))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
 }
