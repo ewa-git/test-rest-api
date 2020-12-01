@@ -27,14 +27,14 @@ public class TweetService {
     private final TweetRepository tweetRepository;
     private final UserService userService;
     private final TweetMapper tweetMapper;
-    private final UserMapper userMapper;
+
 
     public TweetService(TweetRepository tweetRepository, UserService userService,
-                        TweetMapper tweetMapper, UserMapper userMapper) {
+                        TweetMapper tweetMapper) {
         this.tweetRepository = tweetRepository;
         this.userService = userService;
         this.tweetMapper = tweetMapper;
-        this.userMapper = userMapper;
+
     }
 
     public List<TweetDTO> list() {
