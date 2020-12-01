@@ -95,6 +95,7 @@ class TweetServiceTest {
         tweetList = List.of(tweet1, tweet2);
         tweetDTOList = List.of(tweetDTO1, tweetDTO2);
 
+        // mockować przez @InjectMocks i bez mieszkanki prawdziwa klasa / mock
         tweetService = new TweetService(tweetRepository, userService, modelMapper, tweetMapper);
         tweetServiceMockTweetMapper = new TweetService(tweetRepository, userService, modelMapper, mockTweetMapper);
     }
