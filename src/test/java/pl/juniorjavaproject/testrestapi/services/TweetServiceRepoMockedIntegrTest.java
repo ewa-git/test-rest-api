@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-public class TestServiceRepoMockedIntegrTest {
+public class TweetServiceRepoMockedIntegrTest {
 
     @MockBean
     private TweetRepository tweetRepository;
