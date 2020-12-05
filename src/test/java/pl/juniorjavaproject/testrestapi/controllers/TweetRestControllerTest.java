@@ -24,9 +24,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
 import pl.juniorjavaproject.testrestapi.dto.UserDTO;
 import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
+import pl.juniorjavaproject.testrestapi.model.Tweet;
 import pl.juniorjavaproject.testrestapi.services.TweetManagerService;
 import pl.juniorjavaproject.testrestapi.services.TweetService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,9 +67,24 @@ class TweetRestControllerTest {
     }
 
 
-    @DisplayName("get method - should return list of tweetDTO")
+    @DisplayName("get method - should return status OK")
     @Test
     public void test1() throws Exception {
+        //given
+
+        List<TweetDTO> tweetDTOList = new ArrayList<>();
+
+        Mockito.when(tweetManagerService.list()).thenReturn(ResponseEntity.ok(tweetDTOList));
+        //when
+        //then
+        mockMvc.perform(MockMvcRequestBuilders
+                .get(BASE_URI))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @DisplayName("get method - should return list of tweetDTO")
+    @Test
+    public void test1a() throws Exception {
         //given
         UserDTO userDTO = UserDTO.builder()
                 .id(USER_ID)
@@ -82,26 +99,26 @@ class TweetRestControllerTest {
                 .user(userDTO)
                 .build();
         List<TweetDTO> tweetDTOList = List.of(tweetDTO);
-
-        String tweetListJSON = objectMapper.writeValueAsString(tweetDTOList);
-
         Mockito.when(tweetManagerService.list()).thenReturn(ResponseEntity.ok(tweetDTOList));
+
         //when
         //then
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
                 .get(BASE_URI))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
-//                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-//                .andExpect(MockMvcResultMatchers.content().json(tweetListJSON));
-
         MockHttpServletResponse response = mvcResult.getResponse();
         String contentAsString = response.getContentAsString();
+        List<TweetDTO> tweetDTOS = objectMapper.readValue(contentAsString, new TypeReference<List<TweetDTO>>() {
+        });
 
+        assertAll(
+                () -> assertEquals(tweetDTOList.size(), tweetDTOS.size()),
+                () -> assertEquals(tweetDTOList.get(0).getId(), tweetDTOS.get(0).getId()),
+                () -> assertEquals(tweetDTOList.get(0).getUser(), tweetDTOS.get(0).getUser()),
+                () -> assertEquals(tweetDTOList.get(0).getTweetTitle(), tweetDTOS.get(0).getTweetTitle()),
+                () -> assertEquals(tweetDTOList.get(0).getTweetText(), tweetDTOS.get(0).getTweetText()));
 
-
-        List<TweetDTO> tweetDTOS = objectMapper.readValue(contentAsString, new TypeReference<List<TweetDTO>>(){});
-        System.out.println(tweetDTOS);
 
     }
 
@@ -138,13 +155,26 @@ class TweetRestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(tweet))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, "/api/tweets/1"));
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, BASE_URI + TWEET_ID));
+    }
+
+    @DisplayName(" get method with uri id- should return status OK")
+    @Test
+    public void test3() throws Exception {
+        //given
+        Mockito.when(tweetManagerService.read(ArgumentMatchers.anyLong())).thenReturn(ResponseEntity.ok(ArgumentMatchers.any(TweetDTO.class)));
+
+        //when
+        //then
+        mockMvc.perform(MockMvcRequestBuilders
+                .get(BASE_URI + TWEET_ID))
+                .andExpect(MockMvcResultMatchers.status().isOk());
 
     }
 
     @DisplayName(" get method with uri id- should return tweet DTO")
     @Test
-    public void test3() throws Exception {
+    public void test3a() throws Exception {
         //given
         UserDTO userDTO = UserDTO.builder()
                 .id(USER_ID)
@@ -158,16 +188,23 @@ class TweetRestControllerTest {
                 .tweetText(TWEET_TEXT)
                 .user(userDTO)
                 .build();
-        String tweet = objectMapper.writeValueAsString(tweetDTO);
+
         Mockito.when(tweetManagerService.read(ArgumentMatchers.anyLong())).thenReturn(ResponseEntity.ok(tweetDTO));
 
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
                 .get(BASE_URI + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.content().json(tweet));
+                .andReturn();
+        MockHttpServletResponse response = mvcResult.getResponse();
+        String contentAsString = response.getContentAsString();
+        TweetDTO tweetDTOResult = objectMapper.readValue(contentAsString, TweetDTO.class);
+
+        assertAll(() -> assertEquals(tweetDTO.getId(), tweetDTOResult.getId()),
+                () -> assertEquals(tweetDTO.getTweetText(), tweetDTOResult.getTweetText()),
+                () -> assertEquals(tweetDTO.getTweetTitle(), tweetDTOResult.getTweetTitle()),
+                () -> assertEquals(tweetDTO.getUser(), tweetDTOResult.getUser()));
     }
 
     @DisplayName("get method when ID is not in database - should return element not found status")
@@ -183,9 +220,39 @@ class TweetRestControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
-    @DisplayName(" put method - should return updated TweetDTO")
+    @DisplayName(" put method - should return status OK")
     @Test
     public void test5() throws Exception {
+        //given
+        UserDTO userDTO = UserDTO.builder()
+                .id(USER_ID)
+                .firstName(USER_FIRSTNAME)
+                .lastName(USER_LASTNAME)
+                .build();
+
+        TweetDTO tweetDTO = TweetDTO.builder()
+                .id(TWEET_ID)
+                .tweetTitle(TWEET_TITLE)
+                .tweetText(TWEET_TEXT)
+                .user(userDTO)
+                .build();
+        String tweet = objectMapper.writeValueAsString(tweetDTO);
+
+        Mockito.when(tweetService.update(1L, tweetDTO)).thenReturn(tweetDTO);
+
+        //when
+        //then
+        mockMvc.perform(MockMvcRequestBuilders
+                .put(BASE_URI + TWEET_ID)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(tweet))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @DisplayName(" put method - should return updated TweetDTO")
+    @Test
+    public void test5a() throws Exception {
         //given
         UserDTO userDTO = UserDTO.builder()
                 .id(USER_ID)
@@ -209,14 +276,20 @@ class TweetRestControllerTest {
 
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
                 .put(BASE_URI + TWEET_ID)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(tweet))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().json(tweet));
+                .andReturn();
+        MockHttpServletResponse response = mvcResult.getResponse();
+        String contentAsString = response.getContentAsString();
+        TweetDTO tweetDTOResult = objectMapper.readValue(contentAsString, TweetDTO.class);
 
+        assertAll(() -> assertEquals(tweetDTO.getId(), tweetDTOResult.getId()),
+                () -> assertEquals(tweetDTO.getTweetText(), tweetDTOResult.getTweetText()),
+                () -> assertEquals(tweetDTO.getTweetTitle(), tweetDTOResult.getTweetTitle()),
+                () -> assertEquals(tweetDTO.getUser(), tweetDTOResult.getUser()));
     }
 
     @DisplayName(" put method - when given id is not in database - should return not found status ")
