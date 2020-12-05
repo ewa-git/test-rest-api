@@ -76,24 +76,14 @@ class TweetServiceTest {
                     .build();
 
             Tweet tweet = new Tweet();
-            Tweet tweet3 = tweetMapper.from(tweetDTO);
-
             tweet.setUser(user);
             tweet.setTweetText("tweet text");
             tweet.setTweetTitle("tweet title");
             tweet.setCreatedOn(LocalDateTime.now());
 
 
-            Tweet tweet2 = new Tweet();
-            tweet2.setId(1L);
-            tweet2.setUser(user);
-            tweet2.setTweetText("tweet text");
-            tweet2.setTweetTitle("tweet title");
-            tweet2.setCreatedOn(LocalDateTime.now());
-
-
             Mockito.when(userService.findUserById(ArgumentMatchers.anyLong())).thenReturn(Optional.of(user));
-            Mockito.when(tweetRepository.save(tweet3)).thenReturn(tweet2);
+            Mockito.when(tweetRepository.save(tweet)).thenReturn(tweet);
 
             //when
             tweetService.create(tweetDTO);
@@ -168,6 +158,12 @@ class TweetServiceTest {
             //then
             assertThrows(ElementNotFoundException.class, () -> tweetService.read(ArgumentMatchers.anyLong()));
         }
+    }
+
+    @Nested
+    @DisplayName("List method tests")
+    class listMethodTest{
+
     }
 
 }

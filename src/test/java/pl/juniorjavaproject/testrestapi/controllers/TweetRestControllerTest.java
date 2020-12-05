@@ -1,6 +1,7 @@
 package pl.juniorjavaproject.testrestapi.controllers;
 
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,7 +16,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
@@ -85,11 +88,21 @@ class TweetRestControllerTest {
         Mockito.when(tweetManagerService.list()).thenReturn(ResponseEntity.ok(tweetDTOList));
         //when
         //then
-        mockMvc.perform(MockMvcRequestBuilders
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders
                 .get(BASE_URI))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.content().json(tweetListJSON));
+                .andReturn();
+//                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+//                .andExpect(MockMvcResultMatchers.content().json(tweetListJSON));
+
+        MockHttpServletResponse response = mvcResult.getResponse();
+        String contentAsString = response.getContentAsString();
+
+
+
+        List<TweetDTO> tweetDTOS = objectMapper.readValue(contentAsString, new TypeReference<List<TweetDTO>>(){});
+        System.out.println(tweetDTOS);
+
     }
 
     @DisplayName(" post method - should save new tweet and return location header")
@@ -205,6 +218,7 @@ class TweetRestControllerTest {
                 .andExpect(MockMvcResultMatchers.content().json(tweet));
 
     }
+
     @DisplayName(" put method - when given id is not in database - should return not found status ")
     @Test
     public void test6() throws Exception {
