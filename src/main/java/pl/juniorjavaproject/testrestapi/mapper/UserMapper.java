@@ -4,7 +4,6 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.ui.Model;
 import pl.juniorjavaproject.testrestapi.dto.UserDTO;
 import pl.juniorjavaproject.testrestapi.model.User;
 

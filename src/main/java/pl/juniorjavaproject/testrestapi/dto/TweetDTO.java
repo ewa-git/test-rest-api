@@ -21,9 +21,9 @@ public class TweetDTO {
     @Size(max = 30)
     private String tweetTitle;
 
-    @NotBlank
+    @NotBlank(message = "Tweet text must be filled")
     private String tweetText;
 
-    @NotNull
+    @NotNull(message = "User can not be null")
     private UserDTO user;
 }

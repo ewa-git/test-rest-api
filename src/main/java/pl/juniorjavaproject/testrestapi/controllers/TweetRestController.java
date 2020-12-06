@@ -2,8 +2,11 @@ package pl.juniorjavaproject.testrestapi.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,7 +47,7 @@ public class TweetRestController {
             throws ElementNotFoundException {
         LOGGER.info("Received tweetDTO {}", tweetDTO);
         if (result.hasErrors()) {
-
+            return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.created(URI.create("/api/tweets/" + tweetService.create(tweetDTO))).build();
     }
@@ -57,8 +60,11 @@ public class TweetRestController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TweetDTO> update(@PathVariable Long id, @Valid @RequestBody TweetDTO tweetDTO)
-            throws ElementNotFoundException {
+            throws ElementNotFoundException, MethodArgumentNotValidException {
         LOGGER.info("Received tweetDTO {} and id {}", tweetDTO, id);
+/*        if (result.hasErrors()) {
+           throw new MethodArgumentNotValidException(null,result);
+        }*/
         TweetDTO updatedTweetDTO = tweetService.update(id, tweetDTO);
         return ResponseEntity.ok(updatedTweetDTO);
     }

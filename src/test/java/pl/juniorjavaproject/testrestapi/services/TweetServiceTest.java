@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
 import pl.juniorjavaproject.testrestapi.dto.UserDTO;
 import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
