@@ -1,8 +1,6 @@
 package pl.juniorjavaproject.testrestapi.services;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -32,13 +30,14 @@ public class TweetServiceRepoMockedIntegrTest {
     @Autowired
     private TweetMapper tweetMapper;
 
+    //tutaj InjectMocks
     @Autowired
     private TweetService tweetService;
 
-    @BeforeEach
-    void init() {
-        MockitoAnnotations.openMocks(this);
-    }
+//    @BeforeEach
+//    void init() {
+//        MockitoAnnotations.openMocks(this);
+//    }
 
     @Test
     void shouldReturnListOfTweetsDTO() {
@@ -51,7 +50,7 @@ public class TweetServiceRepoMockedIntegrTest {
 
         TweetDTO tweetDTO1 = TweetDTO.builder()
                 .id(1L)
-                .userDTO(userDTO1)
+                .user(userDTO1)
                 .tweetText("Tweet text 1")
                 .tweetTitle("Tweet title 1")
                 .build();
@@ -60,7 +59,7 @@ public class TweetServiceRepoMockedIntegrTest {
 
         TweetDTO tweetDTO2 = TweetDTO.builder()
                 .id(2L)
-                .userDTO(userDTO1)
+                .user(userDTO1)
                 .tweetText("tweet text 2222")
                 .tweetTitle("tweet title 222")
                 .build();

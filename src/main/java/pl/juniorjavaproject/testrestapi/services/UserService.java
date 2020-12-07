@@ -3,6 +3,7 @@ package pl.juniorjavaproject.testrestapi.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
 import pl.juniorjavaproject.testrestapi.model.User;
 import pl.juniorjavaproject.testrestapi.repositories.UserRepository;
 
@@ -16,7 +17,9 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public Optional<User> findUserById(long id) {
-        return userRepository.findById(id);
+    public User findUserById(long id) throws ElementNotFoundException {
+        Optional<User> optionalUser = userRepository.findById(id);
+
+        return optionalUser.orElseThrow(() -> new ElementNotFoundException("Nie znaleziono użytkownika o podanym ID."));
     }
 }

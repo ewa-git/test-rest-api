@@ -19,7 +19,7 @@ public class TweetMapper {
         TweetDTO tweetDTO = modelMapper.map(tweet, TweetDTO.class);
         User userToMap = tweet.getUser();
         UserDTO userDTO = modelMapper.map(userToMap, UserDTO.class);
-        tweetDTO.setUserDTO(userDTO);
+        tweetDTO.setUser(userDTO);
         LOGGER.info("from({}) = {}", tweet, tweetDTO);
         return tweetDTO;
     }

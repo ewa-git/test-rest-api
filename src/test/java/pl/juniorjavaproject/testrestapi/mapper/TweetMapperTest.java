@@ -42,7 +42,7 @@ class TweetMapperTest {
         userDTO.setLastName(lastName);
 
         tweetDTO = new TweetDTO();
-        tweetDTO.setUserDTO(userDTO);
+        tweetDTO.setUser(userDTO);
         tweetDTO.setId(id);
         tweetDTO.setTweetText(textTweet);
         tweetDTO.setTweetTitle(titleTweet);
@@ -59,7 +59,7 @@ class TweetMapperTest {
 
         //then
         assertAll(
-                () -> assertThat(returnedTweetDTO.getUserDTO()).isEqualTo(tweetDTO.getUserDTO()),
+                () -> assertThat(returnedTweetDTO.getUser()).isEqualTo(tweetDTO.getUser()),
                 () -> assertThat(returnedTweetDTO.getId()).isEqualTo(tweetDTO.getId()),
                 () -> assertThat(returnedTweetDTO.getTweetText()).isEqualTo(tweetDTO.getTweetText()),
                 () -> assertThat(returnedTweetDTO.getTweetTitle()).isEqualTo(tweetDTO.getTweetTitle())

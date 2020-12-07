@@ -1,14 +1,11 @@
 package pl.juniorjavaproject.testrestapi.services;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
-import pl.juniorjavaproject.testrestapi.dto.UserDTO;
-import pl.juniorjavaproject.testrestapi.model.Tweet;
-import pl.juniorjavaproject.testrestapi.model.User;
-import pl.juniorjavaproject.testrestapi.repositories.TweetRepository;
 import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
 import pl.juniorjavaproject.testrestapi.exceptions.UserIdNotPresentException;
+import pl.juniorjavaproject.testrestapi.model.Tweet;
+import pl.juniorjavaproject.testrestapi.repositories.TweetRepository;
 import pl.juniorjavaproject.testrestapi.mapper.TweetMapper;
 
 import javax.transaction.Transactional;
@@ -22,14 +19,11 @@ public class TweetService {
 
     private final TweetRepository tweetRepository;
     private final UserService userService;
-    private final ModelMapper modelMapper;
     private final TweetMapper tweetMapper;
 
-    public TweetService(TweetRepository tweetRepository, UserService userService, ModelMapper modelMapper,
-                        TweetMapper tweetMapper) {
+    public TweetService(TweetRepository tweetRepository, UserService userService, TweetMapper tweetMapper) {
         this.tweetRepository = tweetRepository;
         this.userService = userService;
-        this.modelMapper = modelMapper;
         this.tweetMapper = tweetMapper;
     }
 
@@ -46,26 +40,24 @@ public class TweetService {
     }
 
     public Long create(TweetDTO tweetDTO) throws UserIdNotPresentException, ElementNotFoundException {
-        UserDTO userDTO = tweetDTO.getUserDTO();
-        if (userDTO == null || userDTO.getId() == null)
+        if (tweetDTO.getUser() == null || tweetDTO.getUser().getId() == null)
             throw new UserIdNotPresentException("Brak podanego id użytkownika.");
-        Optional<User> optionalUser = userService.findUserById(userDTO.getId());
-        optionalUser.orElseThrow(() -> new ElementNotFoundException("Brak użytkownika o podanym ID"));
-        Tweet tweet = modelMapper.map(tweetDTO, Tweet.class);
+        Long id = tweetDTO.getUser().getId();
+        Tweet tweet = tweetMapper.from(tweetDTO);
+        userService.findUserById(id);
         Tweet savedTweet = tweetRepository.save(tweet);
         return savedTweet.getId();
     }
 
     public TweetDTO read(long id) throws ElementNotFoundException {
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-        Tweet tweet = optionalTweet
-                .orElseThrow(() -> new ElementNotFoundException("Brak tweetu o podanym ID"));
+        Optional<Tweet> tweetOptional = tweetRepository.findById(id);
+        Tweet tweet = tweetOptional.orElseThrow(() -> new ElementNotFoundException("Nie ma elementu o podanym ID."));
         return tweetMapper.from(tweet);
     }
 
     public TweetDTO update(Long id, TweetDTO tweetDTO) throws ElementNotFoundException {
         Optional<Tweet> tweetOptional = tweetRepository.findById(id);
-        tweetOptional.orElseThrow(() -> new ElementNotFoundException("Nie ma elementu o podanym ID"));
+        tweetOptional.orElseThrow(() -> new ElementNotFoundException("Nie ma elementu o podanym ID."));
         Tweet tweet = tweetMapper.from(tweetDTO);
         Tweet savedTweet = tweetRepository.save(tweet);
         return tweetMapper.from(savedTweet);
@@ -74,7 +66,7 @@ public class TweetService {
     public void delete(Long id) throws ElementNotFoundException {
         Optional<Tweet> tweetOptional = tweetRepository.findById(id);
         Tweet tweet = tweetOptional.orElseThrow(
-                () -> new ElementNotFoundException("Nie ma elementu o podanym ID"));
+                () -> new ElementNotFoundException("Nie ma elementu o podanym ID."));
         tweetRepository.delete(tweet);
     }
 }

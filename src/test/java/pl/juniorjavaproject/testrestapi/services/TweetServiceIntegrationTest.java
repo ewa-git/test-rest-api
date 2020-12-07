@@ -30,7 +30,7 @@ public class TweetServiceIntegrationTest {
         TweetDTO tweetDTO = TweetDTO.builder()
                 .tweetText("TEST TEXT")
                 .tweetTitle("TITLE TEST")
-                .userDTO(userDTO).build();
+                .user(userDTO).build();
 
         //when
         Long tweetId = tweetService.create(tweetDTO);
@@ -48,7 +48,7 @@ public class TweetServiceIntegrationTest {
         TweetDTO tweetDTO = TweetDTO.builder()
                 .tweetText("TEST TEXT")
                 .tweetTitle("TITLE TEST")
-                .userDTO(userDTO).build();
+                .user(userDTO).build();
 
         tweetService.create(tweetDTO);
 
@@ -61,7 +61,7 @@ public class TweetServiceIntegrationTest {
                 () -> assertThat(listTweetsDTO.size()).isEqualTo(1),
                 () -> assertThat(firstTweetDTO.getTweetTitle()).isEqualTo(tweetDTO.getTweetTitle()),
                 () -> assertThat(firstTweetDTO.getTweetText()).isEqualTo(tweetDTO.getTweetText()),
-                () -> assertThat(firstTweetDTO.getUserDTO().getId()).isEqualTo(userDTO.getId())
+                () -> assertThat(firstTweetDTO.getUser().getId()).isEqualTo(userDTO.getId())
         );
 
     }

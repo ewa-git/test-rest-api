@@ -26,5 +26,5 @@ public class TweetDTO {
     private String tweetText;
 
     @NotNull
-    private UserDTO userDTO;
+    private UserDTO user;
 }
