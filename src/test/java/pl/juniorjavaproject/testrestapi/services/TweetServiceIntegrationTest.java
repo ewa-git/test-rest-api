@@ -1,5 +1,7 @@
 package pl.juniorjavaproject.testrestapi.services;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -7,6 +9,8 @@ import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
 import pl.juniorjavaproject.testrestapi.dto.UserDTO;
 import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
 import pl.juniorjavaproject.testrestapi.exceptions.UserIdNotPresentException;
+import pl.juniorjavaproject.testrestapi.model.User;
+import pl.juniorjavaproject.testrestapi.repositories.UserRepository;
 
 import java.util.List;
 
@@ -18,50 +22,58 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @SpringBootTest
 public class TweetServiceIntegrationTest {
 
-    @Autowired
-    TweetService tweetService;
+    private UserDTO userDTO;
+    private TweetDTO tweetDTO;
+    private static long userId;
 
-    @Test
-    void givenTweetDtoShouldReturnSavedTweetLongId() throws UserIdNotPresentException, ElementNotFoundException {
-        //given
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(1L);
+    private TweetService tweetService;
+    private static UserRepository userRepository;
 
-        TweetDTO tweetDTO = TweetDTO.builder()
+
+
+    @BeforeAll
+    static void start() {
+        User user = new User();
+        user.setFirstName("Damian");
+        user.setLastName("Rowiński");
+        user.setPassword("password");
+        User savedUser = userRepository.save(user);
+        userId = savedUser.getId();
+    }
+
+    @BeforeEach
+    void init() {
+        userDTO = new UserDTO();
+        userDTO.setId(userId);
+
+        tweetDTO = TweetDTO.builder()
                 .tweetText("TEST TEXT")
                 .tweetTitle("TITLE TEST")
                 .user(userDTO).build();
+    }
 
-        //when
+    @Test
+    void givenTweetDtoShouldReturnSavedTweetLongId() throws UserIdNotPresentException, ElementNotFoundException {
         Long tweetId = tweetService.create(tweetDTO);
 
-        //then
         assertThat(tweetId).isNotNull();
     }
 
     @Test
     void shouldReturnListOfTweets() throws UserIdNotPresentException, ElementNotFoundException {
         //given
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(1L);
-
-        TweetDTO tweetDTO = TweetDTO.builder()
-                .tweetText("TEST TEXT")
-                .tweetTitle("TITLE TEST")
-                .user(userDTO).build();
-
+        List<TweetDTO> initialList = tweetService.list();
+        int initialListSize = initialList.size();
         tweetService.create(tweetDTO);
 
         //when
         List<TweetDTO> listTweetsDTO = tweetService.list();
-        TweetDTO firstTweetDTO = listTweetsDTO.get(0);
 
         //then
+
         assertAll(
-                () -> assertThat(listTweetsDTO.size()).isEqualTo(1),
-                () -> assertThat(firstTweetDTO.getTweetTitle()).isEqualTo(tweetDTO.getTweetTitle()),
-                () -> assertThat(firstTweetDTO.getTweetText()).isEqualTo(tweetDTO.getTweetText()),
-                () -> assertThat(firstTweetDTO.getUser().getId()).isEqualTo(userDTO.getId())
+                () -> assertThat(listTweetsDTO).isNotNull(),
+                () -> assertThat(listTweetsDTO.size()).isEqualTo(initialListSize + 1)
         );
 
     }
