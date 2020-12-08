@@ -24,25 +24,22 @@ public class TweetServiceIntegrationTest {
 
     private UserDTO userDTO;
     private TweetDTO tweetDTO;
-    private static long userId;
+    private long userId;
 
+    @Autowired
     private TweetService tweetService;
-    private static UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-
-
-    @BeforeAll
-    static void start() {
+    @BeforeEach
+    void init() {
         User user = new User();
         user.setFirstName("Damian");
         user.setLastName("Rowiński");
         user.setPassword("password");
         User savedUser = userRepository.save(user);
         userId = savedUser.getId();
-    }
 
-    @BeforeEach
-    void init() {
         userDTO = new UserDTO();
         userDTO.setId(userId);
 
