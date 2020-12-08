@@ -28,7 +28,7 @@ public class RestExceptionsHandler {
         ConstraintsViolationsDTO constraintsViolationsDTO = new ConstraintsViolationsDTO();
         constraintsViolationsDTO.addFieldErrorList(fieldErrors);
 
-        log.error("Raised MethodArgumentNotValidException with field violations:");
+        log.error("Raised {} with field violations:", ex.getClass().getSimpleName());
         log.error(constraintsViolationsDTO.toString());
 
         return constraintsViolationsDTO;
@@ -52,7 +52,7 @@ public class RestExceptionsHandler {
     }
 
     private String getExceptionMessage(Exception ex) {
-        log.error("Raised exception " + ex.getClass().getSimpleName() + ":");
+        log.error("Raised exception {} :", ex.getClass().getSimpleName());
         log.error(ex.getMessage());
         return ex.getMessage();
     }
