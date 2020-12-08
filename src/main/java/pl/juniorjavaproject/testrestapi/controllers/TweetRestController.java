@@ -23,7 +23,6 @@ import java.util.List;
 @RequestMapping("/api/tweets")
 @Slf4j
 public class TweetRestController {
-
     private final TweetService tweetService;
 
     public TweetRestController(TweetService tweetService) {
@@ -32,7 +31,7 @@ public class TweetRestController {
 
     @GetMapping
     public ResponseEntity<List<TweetDTO>> list() {
-        log.info("User requested list of Tweets");
+        log.info("User requested List of Tweets");
         List<TweetDTO> tweetDTOList = tweetService.list();
         return !tweetDTOList.isEmpty() ? ResponseEntity.ok(tweetDTOList) : ResponseEntity.notFound().build();
     }
@@ -40,7 +39,7 @@ public class TweetRestController {
     @PostMapping
     public ResponseEntity<TweetDTO> create(@Valid @RequestBody TweetDTO tweetDTO)
             throws UserIdNotPresentException, ElementNotFoundException {
-        log.info("User requested create for {}", tweetDTO);
+        log.info("User requested Create for {}", tweetDTO);
         return ResponseEntity.created(URI.create("/api/tweets/" + tweetService.create(tweetDTO))).build();
     }
 
