@@ -1,6 +1,5 @@
 package pl.juniorjavaproject.testrestapi.services;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-// test with live server and H2 database, repository is not mocked
-
+// test with live server and H2 database
 @SpringBootTest
 public class TweetServiceIntegrationTest {
 
@@ -37,6 +35,7 @@ public class TweetServiceIntegrationTest {
         user.setFirstName("Damian");
         user.setLastName("Rowiński");
         user.setPassword("password");
+        user.setEmail("damian.rowinski@gmail.com");
         User savedUser = userRepository.save(user);
         userId = savedUser.getId();
 
@@ -50,7 +49,7 @@ public class TweetServiceIntegrationTest {
     }
 
     @Test
-    void givenTweetDtoShouldReturnSavedTweetLongId() throws UserIdNotPresentException, ElementNotFoundException {
+    void givenTweetDtoShouldReturnSavedTweetId() throws UserIdNotPresentException, ElementNotFoundException {
         Long tweetId = tweetService.create(tweetDTO);
 
         assertThat(tweetId).isNotNull();
@@ -60,19 +59,61 @@ public class TweetServiceIntegrationTest {
     void shouldReturnListOfTweets() throws UserIdNotPresentException, ElementNotFoundException {
         //given
         List<TweetDTO> initialList = tweetService.list();
-        int initialListSize = initialList.size();
+        int expectedListSize = initialList.size() + 1;
         tweetService.create(tweetDTO);
 
         //when
         List<TweetDTO> listTweetsDTO = tweetService.list();
 
         //then
-
         assertAll(
                 () -> assertThat(listTweetsDTO).isNotNull(),
-                () -> assertThat(listTweetsDTO.size()).isEqualTo(initialListSize + 1)
+                () -> assertThat(listTweetsDTO.size()).isEqualTo(expectedListSize)
         );
+    }
 
+    @Test
+    void givenIdShouldReturnTweet() throws UserIdNotPresentException, ElementNotFoundException {
+        //given
+        Long createdTweetId = tweetService.create(tweetDTO);
+
+        //when
+        TweetDTO readedTweet = tweetService.read(createdTweetId);
+
+        //then
+        assertThat(readedTweet).isNotNull();
+    }
+
+    @Test
+    void givenIdAndTweetDtoShouldReturnUpdatedTweet() throws UserIdNotPresentException, ElementNotFoundException {
+        //given
+        Long savedTweetId = tweetService.create(tweetDTO);
+        TweetDTO updateTweetDTO = new TweetDTO();
+        updateTweetDTO.setTweetText("Nowy text");
+        updateTweetDTO.setTweetTitle("New title");
+        updateTweetDTO.setUser(userDTO);
+
+        //when
+        TweetDTO updatedTweet = tweetService.update(savedTweetId, updateTweetDTO);
+
+        //then
+        assertThat(updatedTweet).isNotNull();
+    }
+
+    @Test
+    void givenIdShouldDeleteTweet() throws ElementNotFoundException, UserIdNotPresentException {
+        //given
+        Long createdTweetId = tweetService.create(tweetDTO);
+        List<TweetDTO> listWithCreatedTweet = tweetService.list();
+        int expectedListSize = listWithCreatedTweet.size() - 1;
+
+        //when
+        tweetService.delete(createdTweetId);
+        List<TweetDTO> updatedList = tweetService.list();
+        int listSizeWithDeletedTweet = updatedList.size();
+
+        //then
+        assertThat(listSizeWithDeletedTweet).isEqualTo(expectedListSize);
     }
 
 
