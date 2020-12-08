@@ -1,4 +1,4 @@
-package pl.juniorjavaproject.testrestapi.exceptions;
+package pl.juniorjavaproject.testrestapi.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import pl.juniorjavaproject.testrestapi.dto.ConstraintsViolationsDTO;
+import pl.juniorjavaproject.testrestapi.exceptions.DifferentIdException;
+import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
+import pl.juniorjavaproject.testrestapi.exceptions.UserIdNotPresentException;
 
 import java.util.List;
 
@@ -18,7 +21,7 @@ public class RestExceptionsHandler {
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ConstraintsViolationsDTO validationsConstraintsViolations(MethodArgumentNotValidException ex){
+    public ConstraintsViolationsDTO validationsConstraintsViolations(MethodArgumentNotValidException ex) {
 
         BindingResult bindingResult = ex.getBindingResult();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -33,8 +36,7 @@ public class RestExceptionsHandler {
 
     @ExceptionHandler({ElementNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String elementNotFoundException(ElementNotFoundException ex) {
-        return getExceptionMessage(ex);
+    public String elementNotFoundException(ElementNotFoundException ex) {return getExceptionMessage(ex);
     }
 
     @ExceptionHandler({DifferentIdException.class})
