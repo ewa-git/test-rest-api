@@ -1,5 +1,6 @@
 package pl.juniorjavaproject.testrestapi.services;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
 import pl.juniorjavaproject.testrestapi.exceptions.ElementNotFoundException;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 @Transactional
 @Service
+@Slf4j
 public class TweetService {
 
     private final TweetRepository tweetRepository;
