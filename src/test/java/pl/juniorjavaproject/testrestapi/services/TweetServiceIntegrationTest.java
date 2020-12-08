@@ -78,10 +78,10 @@ public class TweetServiceIntegrationTest {
         Long createdTweetId = tweetService.create(tweetDTO);
 
         //when
-        TweetDTO readedTweet = tweetService.read(createdTweetId);
+        TweetDTO readTweet = tweetService.read(createdTweetId);
 
         //then
-        assertThat(readedTweet).isNotNull();
+        assertThat(readTweet).isNotNull();
     }
 
     @Test
