@@ -2,13 +2,9 @@ package pl.juniorjavaproject.testrestapi.mapper;
 
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import pl.juniorjavaproject.testrestapi.dto.TweetDTO;
-import pl.juniorjavaproject.testrestapi.dto.UserDTO;
 import pl.juniorjavaproject.testrestapi.model.Tweet;
-import pl.juniorjavaproject.testrestapi.model.User;
 
 @Component
 @Slf4j
