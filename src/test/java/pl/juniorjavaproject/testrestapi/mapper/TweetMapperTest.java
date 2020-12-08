@@ -52,12 +52,8 @@ class TweetMapperTest {
 
     @Test
     void givenTweetShouldReturnTweetDtoWithDtoFieldsMappedFromTweet() {
-        //given
-
-        //when
         TweetDTO returnedTweetDTO = tweetMapper.from(tweet);
 
-        //then
         assertAll(
                 () -> assertThat(returnedTweetDTO.getUser()).isEqualTo(tweetDTO.getUser()),
                 () -> assertThat(returnedTweetDTO.getId()).isEqualTo(tweetDTO.getId()),
@@ -68,12 +64,8 @@ class TweetMapperTest {
 
     @Test
     void givenTweetDtoShouldReturnTweetWithFieldsMappedFromDto() {
-        //given
-
-        //when
         Tweet returnedTweet = tweetMapper.from(tweetDTO);
 
-        //then
         assertAll(
                 () -> assertThat(returnedTweet.getUser()).isEqualTo(tweet.getUser()),
                 () -> assertThat(returnedTweet.getId()).isEqualTo(tweet.getId()),
